@@ -160,7 +160,7 @@ class Background(pygame.sprite.Sprite):
     def reset(self):
         self.rect.left = 0
     
-def main():
+def game():
     screen = pygame.display.set_mode((800, 600))
     pygame.display.set_caption("Side ROLLER!")
 
@@ -239,8 +239,73 @@ def main():
         pygame.display.flip()
     
     roller.soundBackground.stop()
-
     #return mouse cursor
-    pygame.mouse.set_visible(True) 
+    pygame.mouse.set_visible(True)
+    return scoreboard.score
+	
+def instructions(score):
+    roller = Roller()
+    background = Background()
+    
+    allSprites = pygame.sprite.OrderedUpdates(background, roller)
+    insFont = pygame.font.SysFont(None, 50)
+
+    instructions = (
+    "Mail Pilot.     Last score: %d" % score ,
+    "Instructions:  You are a mail pilot,",
+    "delivering mail to the islands.",
+    "",
+    "Fly over an island to drop the mail,",
+    "but be careful not to fly too close",    
+    "to the clouds. Your plane will fall ",
+    "apart if it is hit by lightning too",
+    "many times.",
+    "",
+    "good luck!",
+    "",
+    "click to start, escape to quit..."
+    )
+
+    insLabels = []    
+    for line in instructions:
+        tempLabel = insFont.render(line, 1, (255, 255, 0))
+        insLabels.append(tempLabel)
+ 
+    keepGoing = True
+    clock = pygame.time.Clock()
+    pygame.mouse.set_visible(False)
+    while keepGoing:
+        clock.tick(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                keepGoing = False
+                donePlaying = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                keepGoing = False
+                donePlaying = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    keepGoing = False
+                    donePlaying = True
+    
+        allSprites.update()
+        allSprites.draw(screen)
+
+        for i in range(len(insLabels)):
+            screen.blit(insLabels[i], (50, 30*i))
+
+        pygame.display.flip()
+        
+    pygame.mouse.set_visible(True)
+    return donePlaying
+        
+def main():
+    donePlaying = False
+    score = 0
+    while not donePlaying:
+        donePlaying = instructions(score)
+        if not donePlaying:
+            score = game()
+	
 if __name__ == "__main__":
     main()
