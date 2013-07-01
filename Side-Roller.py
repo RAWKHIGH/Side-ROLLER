@@ -39,7 +39,7 @@ class Roller(pygame.sprite.Sprite):
         
     def update(self):
         mousex, mousey = pygame.mouse.get_pos()
-        self.rect.center = (mousex, 500)
+        self.rect.center = (mousex, 480)
         
 
 class Bullet(pygame.sprite.Sprite):
@@ -51,17 +51,25 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.reset()
         
-        self.dx = 4
-
+        self.dx = 5
+        self.shoot = False
+	
     def update(self):
-        self.rect.centerx += self.dx
+        #self.rect.centerx += self.dx
         if self.rect.right > 800:
+            self.shoot = False
             self.reset()
+		
+        if self.shoot == True:
+            self.rect.centerx += self.dx
 
+        if self.shoot == False:
+            bullet_position = pygame.mouse.get_pos()
+            self.rect.centerx = bullet_position[0]
+			
     def reset(self):
-        bullet_position = pygame.mouse.get_pos()
-        self.rect.top = 450
-        self.rect.centerx = bullet_position[0]
+        self.rect.top = 475
+        self.rect.centerx = -100 
         
 class redEnemy(pygame.sprite.Sprite):
     def __init__(self):
@@ -164,9 +172,10 @@ def main():
     bullet = Bullet()
     scoreboard = Scoreboard()
     
-    goodSprites = pygame.sprite.Group(background, roller)
+    backgroundSprite = pygame.sprite.Group(background)
     badSprites = pygame.sprite.Group(enemyR, enemyP, enemyW)
     scoreSprite = pygame.sprite.Group(scoreboard)
+    playerSprite = pygame.sprite.Group(roller)
     bulletSprite = pygame.sprite.Group(bullet)
 	
     clock = pygame.time.Clock()
@@ -179,9 +188,8 @@ def main():
                 keepGoing = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    bulletSprite.update()
-                    bulletSprite.draw(screen)
                     roller.soundWaka.play()
+                    bullet.shoot = True
 		
         hitEnemys = pygame.sprite.spritecollide(roller, badSprites, False)
 		
@@ -189,28 +197,44 @@ def main():
             roller.soundDeath.play()
             scoreboard.lives -= 1
             if scoreboard.lives <= 0:
-                print("Game over!")
+                print('Game over!')
                 scoreboard.lives = 5
                 scoreboard.score = 0
             for theEnemy in killEnemys:
                 theEnemy.reset()
 
-        #check collisions
         killEnemys = pygame.sprite.spritecollide(bullet, badSprites, False)
 
         if killEnemys:
             roller.soundKill.play()
             scoreboard.score += 100
+            bullet.shoot = False
             for theEnemy in killEnemys:
                 theEnemy.reset()
 
-        goodSprites.update()
+        previousScore = 0
+        if previousScore + 600 == scoreboard.score:
+            previousScore = scoreboard.score
+            enemyR.dx += 1
+            enemyP.dx += 1
+            enemyW.dx += 1
+            print (previousScore)
+            print (scoreboard.score)
+
+			
+        backgroundSprite.update()
         badSprites.update()
         scoreSprite.update()
-		
-        goodSprites.draw(screen)
+        bulletSprite.update()
+        playerSprite.update()
+
+        backgroundSprite.draw(screen)
         badSprites.draw(screen)
         scoreSprite.draw(screen)
+        bulletSprite.draw(screen)
+        playerSprite.draw(screen)
+        
+        
         
         pygame.display.flip()
     
