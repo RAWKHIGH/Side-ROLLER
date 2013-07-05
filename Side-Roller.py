@@ -200,7 +200,11 @@ def game():
     enemyW = whiteEnemy()
     background = Background()
     bullet = Bullet()
-    obstical = Obstical()
+    obstical0 = Obstical()
+    obstical1 = Obstical()
+    obstical2 = Obstical()
+    obstical3 = Obstical()
+    obstical4 = Obstical()
 
     scoreboard = Scoreboard()
     
@@ -211,7 +215,7 @@ def game():
     scoreSprite = pygame.sprite.Group(scoreboard)
     playerSprite = pygame.sprite.Group(roller)
     bulletSprite = pygame.sprite.Group(bullet)
-    obsticalSprite = pygame.sprite.Group()
+    obsticalSprite = pygame.sprite.Group(obstical0,obstical1,obstical2,obstical3,obstical4)
 	
     clock = pygame.time.Clock()
     keepGoing = True
@@ -232,8 +236,6 @@ def game():
             scoreboard.lives -= 1
             if scoreboard.lives <= 0:
                 keepGoing = False
-                scoreboard.lives = 5
-                scoreboard.score = 0
             for theEnemy in hitEnemys:
                 theEnemy.reset()
 
@@ -243,8 +245,6 @@ def game():
             scoreboard.lives -= 1
             if scoreboard.lives <= 0:
                 keepGoing = False
-                scoreboard.lives = 5
-                scoreboard.score = 0
             for theEnemy in hitObstical:
                 theEnemy.reset()
 				
@@ -266,9 +266,17 @@ def game():
                     print (enemyW.dx)
                     print (scoreboard.score)
             if scoreboard.score % 500 == 0 and scoreboard.score != 0:
-                obsticalSprite.add(obstical)
-                obstical.attack = True
-                print (obsticalSprite)
+                obstical0.attack = True
+            if scoreboard.score % 1000 == 0 and scoreboard.score != 0:
+                obstical0.attack = True
+                obstical1.attack = True
+                obstical2.attack = True
+            if scoreboard.score % 2000 == 0 and scoreboard.score != 0:
+                obstical0.attack = True
+                obstical1.attack = True
+                obstical2.attack = True
+                obstical3.attack = True
+                obstical4.attack = True
             for theEnemy in killEnemys:
                 theEnemy.reset()
 			
@@ -301,11 +309,8 @@ def game():
 def startScreen(score):
     roller = Roller()
     intro_image = pygame.image.load("Menu-DRAW.png").convert()
-
-    pygame.display.set_caption("Intro")
-    
+    pygame.display.set_caption("Intro")   
     roller.soundIntro.play(-1)
-	
     screen.blit(intro_image, [0,0])
  
     keepGoing = True
@@ -335,32 +340,82 @@ def startScreen(score):
 
 def gameOver(score):
     roller = Roller()
-    intro_image = pygame.image.load("gameOver.png").convert()
-
-    pygame.display.set_caption("Game Over!")
-    
+    outro_image = pygame.image.load("gameOver.png").convert()
+    pygame.display.set_caption("Game Over!")   
     roller.soundIntro.play(-1)
+    screen.blit(outro_image, [0,0])
+
+    HSfile = open('HighScore.txt', 'r+')
+    hs = HSfile.read()
+    HSfile.close()
+    print ('Old High Score ' + hs)
+    HSfont = pygame.font.SysFont("None", 50)
+    if str(score) >= hs:
+        HSfile = open('HighScore.txt', 'r+')
+        print ('NEW HIGH SCORE')
+        HSfile.write(str(score)) 
+        HSfile.close()
+        MESStext = HSfont.render("New High Score!!", 1,(255,255,255))
+        hScore = 1
+    else:
+        MESStext = HSfont.render("Good Job", 1,(255,255,255))
+        hScore = 0
+    HSfile = open('HighScore.txt', 'r+')
+    hsN = HSfile.read()
+    print ('New High Score ' + hsN)
+    HStext = HSfont.render("High Score: "+ hsN, 1,(255,255,255))
+    YStext = HSfont.render("Your Score: "+ str(score), 1,(255,255,255))
+    if hScore == 0:
+        screen.blit(MESStext, (300, 125))
+    else:
+        screen.blit(MESStext, (250, 125))
+    screen.blit(HStext, (250, 250))
+    screen.blit(YStext, (250, 300))
+    HSfile.close()
 	
-    screen.blit(intro_image, [0,0])
- 
+    playAgain_image = pygame.image.load("playAgain.png").convert()
+    playAgain_image.set_colorkey(black)
+    screen.blit(playAgain_image, [199,420])
+    playAgain_rect = pygame.draw.rect(screen, blue,(199,420, 200, 60,),2)
+	
+    quit_image = pygame.image.load("quit.png").convert()
+    quit_image.set_colorkey(black)
+    screen.blit(quit_image, [402,420])
+    quit_rect = pygame.draw.rect(screen, blue,(402,420, 200, 60,),2)
+
     keepGoing = True
     clock = pygame.time.Clock()
     pygame.mouse.set_visible(True)
     while keepGoing:
         clock.tick(30)
         for event in pygame.event.get():
+            mouse_position = pygame.mouse.get_pos()
+            mouse_x = mouse_position[0]
+            mouse_y = mouse_position[1]
+            print (mouse_position)
             if event.type == pygame.QUIT:
                 keepGoing = False
                 donePlaying = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                keepGoing = False
-                donePlaying = False
+                if mouse_x >= playAgain_rect.topleft[0] and mouse_y >= playAgain_rect.topleft[1]:
+                    if mouse_x >= playAgain_rect.bottomleft[0] and mouse_y <= playAgain_rect.bottomleft[1]:
+                        if mouse_x <= playAgain_rect.topright[0] and mouse_y >= playAgain_rect.topright[1]:
+                            if mouse_x <= playAgain_rect.bottomright[0] and mouse_y <= playAgain_rect.bottomright[1]:
+                                keepGoing = False
+                                donePlaying = False
+                                print ("Play Again")
+                elif mouse_x >= quit_rect.topleft[0] and mouse_y >= quit_rect.topleft[1]:
+                    if mouse_x >= quit_rect.bottomleft[0] and mouse_y <= quit_rect.bottomleft[1]:
+                        if mouse_x <= quit_rect.topright[0] and mouse_y >= quit_rect.topright[1]:
+                            if mouse_x <= quit_rect.bottomright[0] and mouse_y <= quit_rect.bottomright[1]:								
+                                keepGoing = False
+                                donePlaying = True
+                                print ("Quit")
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     keepGoing = False
                     donePlaying = True
     
-
         pygame.display.flip()
     
     roller.soundIntro.stop()
